@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         var date = SimpleDateFormat("yyyy-MM-dd").format(Date())
         var filename = "record_$date"+"_"+(0..100).random()+".3gp"
-        var path: String = getExternalFilesDir("").toString() + "/$filename"
+        var path: String = "${externalCacheDir?.absolutePath}/$filename"
         mediarec = MediaRecorder()
 
 
