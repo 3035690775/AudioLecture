@@ -9,9 +9,13 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.visualizer.amplitude.AudioRecordView
 import java.io.IOException
+import java.lang.Math.random
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.random.Random.Default.nextInt
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mediarec : MediaRecorder
@@ -31,9 +35,9 @@ class MainActivity : AppCompatActivity() {
         btnStart.isEnabled = false
         btnStop.isEnabled = false
 
-        val date = SimpleDateFormat("yyyy-MM-dd HH:mm").format(Date())
-        val filename = "record_$date.3gp"
-        val path: String = getExternalFilesDir("").toString() + "/$filename"
+        var date = SimpleDateFormat("yyyy-MM-dd").format(Date())
+        var filename = "record_$date"+"_"+(0..100).random()+".3gp"
+        var path: String = getExternalFilesDir("").toString() + "/$filename"
         mediarec = MediaRecorder()
 
 
@@ -60,6 +64,14 @@ class MainActivity : AppCompatActivity() {
             mediarec.start()
             btnStart.isEnabled = false
             btnStop.isEnabled = true
+
+            val audioRecordView: AudioRecordView = findViewById(R.id.audioRecordView)
+            Thread {
+                while (btnStop.isEnabled){
+                    audioRecordView.update(mediarec.maxAmplitude)
+                    Thread.sleep(30)
+                }
+            }.start()
         }
 
 
@@ -74,7 +86,15 @@ class MainActivity : AppCompatActivity() {
         btnPlay.setOnClickListener {
             var mediaplay = MediaPlayer()
             mediaplay.setDataSource(path)
-            mediaplay.prepare()
+            try {
+                mediaplay.prepare()
+            } catch (e: IOException) {
+                Toast.makeText(
+                    this,
+                    e.toString(),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
             mediaplay.start()
         }
 
